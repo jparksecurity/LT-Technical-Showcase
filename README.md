@@ -8,16 +8,17 @@ I use Python3 and Requests library. I include the library as submodule, so if yo
 
 How to use:
 if it depends on your OS, but generally speaking
-
+```
 # python .\photo-album.py
 Enter which album you want to see:
-
+```
 then you can type the number of the photo album you want to see.
 
 I put an example at the bottom of README.md.
 
 Thank you for reading,
 
+```
 For example,
 # python .\photo-album.py
 Enter which album you want to see:3
@@ -71,3 +72,4 @@ Enter which album you want to see:3
 [148] aperiam amet est occaecati quae non ut
 [149] saepe recusandae ut odio enim ipsa quo placeat iusto
 [150] ipsum numquam ratione facilis provident animi reprehenderit ut
+```
