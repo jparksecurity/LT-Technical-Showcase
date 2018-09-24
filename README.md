@@ -4,7 +4,7 @@ Lean Techniques Showcase
 Hi,
 
 I'm John Park, and I've completed the showcase.
-I use Python3 and Requests library. I include the library as submodule, so if you can just clone my repository.
+I use Python3 and Requests library. I include the library as submodule, so you can just clone my repository.
 
 How to use:
 if it depends on your OS, but generally speaking
