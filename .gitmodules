@@ -1,3 +1,6 @@
 [submodule "requests"]
 	path = requests
 	url = git://github.com/requests/requests.git
+[submodule "pytest"]
+	path = pytest
+	url = https://github.com/pytest-dev/pytest.git
