@@ -3,18 +3,29 @@ Lean Techniques Showcase
 
 Hi,
 
-I'm John Park, and I've completed the showcase.
-I use Python3 and Requests library. I include the library as submodule, so you can just clone my repository.
+I'm John Park, and I've updated my code after the feedback.
+I use Python3 and Requests, Pytest library. I include the libraries as submodule, so you can just clone my repository.
 
 How to use:
 if it depends on your OS, but generally speaking
 ```
-# python .\photo-album.py
+# python .\photo_album.py
 Enter which album you want to see:
 ```
 then you can type the number of the photo album you want to see.
-
 I put an example at the bottom of README.md.
+
+
+How to test:
+if it depends on your OS, but generally speaking
+```
+# pytest .\test_album.py
+```
+It will print whether the test is passed or failed.
+
+
+And error.txt is generated when exception was raised.
+You can check what was a problem and what time an error was raised.
 
 Thank you for reading,
 
