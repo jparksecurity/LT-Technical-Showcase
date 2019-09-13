@@ -1,0 +1,5 @@
+language: python
+script:
+  - pytest -v --cov=./
+after_success:
+  - codecov

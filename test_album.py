@@ -1,40 +1,91 @@
-import photo_album
 import pytest
-import sys
-from contextlib import contextmanager
-from io import StringIO
+import requests
+import logging
 
-@contextmanager
-def replace_stdin(target):
-    orig = sys.stdin
-    sys.stdin = target
-    yield
-    sys.stdin = orig
+import album
+from settings import (MOCK_ALBUM_ID, INPUT_WARNING_MESSAGE,
+                     SERVER_ERROR_MESSAGE, URL, MOCK_JSON, MOCK_OUTPUT)
 
-def test_CA1():
-    with pytest.raises(NameError), replace_stdin(StringIO("123")):
-        photo_album.Check_Acceptance()
+def test_validate_input_non_numeric_value(monkeypatch, caplog):
+    monkeypatch.setattr("builtins.input", lambda x: 'asdfa')
+    assert album.validate_input() == -1
+    assert caplog.record_tuples == [("root", logging.WARNING,
+                                    INPUT_WARNING_MESSAGE)]
 
-def test_CA2():
-    with pytest.raises(NameError), replace_stdin(StringIO("asdf")):
-        photo_album.Check_Acceptance()
 
-def test_CA_3():
-    with replace_stdin(StringIO("12")):
-        assert photo_album.Check_Acceptance() == 12
+def test_validate_input_negative_integer_value(monkeypatch, caplog):
+    monkeypatch.setattr("builtins.input", lambda x: '-1')
+    assert album.validate_input() == -1
+    assert caplog.record_tuples == [("root", logging.WARNING,
+                                    INPUT_WARNING_MESSAGE)]
 
-def test_FA_1():
-    with pytest.raises(Exception):
-        photo_album.Fetch_Album(1234)
 
-def test_FA_2():
-    assert (photo_album.Fetch_Album(1))[0]['id'] == 1
+def test_validate_input_non_integer_value(monkeypatch, caplog):
+    monkeypatch.setattr("builtins.input", lambda x: '1.5')
+    assert album.validate_input() == -1
+    assert caplog.record_tuples == [("root", logging.WARNING,
+                                    INPUT_WARNING_MESSAGE)]
 
-def test_PA_1():
-    json = [{"albumId": 14, "id": 651, "title": "fugiat quos ullam aut ducimus saepe", "url": "https://via.placeholder.com/600/b9173d", "thumbnailUrl": "https://via.placeholder.com/150/b9173d"}, {"albumId": 14, "id": 652, "title": "tempore et sit cum aut", "url": "https://via.placeholder.com/600/a8b15c","thumbnailUrl": "https://via.placeholder.com/150/a8b15c"}]
-    a = (photo_album.Parse_Album(json))[0]
-    b = [651, 'fugiat quos ullam aut ducimus saepe']
-    if not list(set(a) - set(b)):
-        assert 1
-    else:
-        assert 0
+
+def test_validate_input_less_than_one(monkeypatch, caplog):
+    monkeypatch.setattr("builtins.input", lambda x: '0')
+    assert album.validate_input() == -1
+    assert caplog.record_tuples == [("root", logging.WARNING,
+                                    INPUT_WARNING_MESSAGE)]
+
+
+def test_validate_input_equal_to_one(monkeypatch):
+    monkeypatch.setattr("builtins.input", lambda x: '1')
+    assert album.validate_input() == 1
+
+def test_validate_input_greater_than_one(monkeypatch):
+    monkeypatch.setattr("builtins.input", lambda x: '2')
+    assert album.validate_input() == 2
+
+
+def test_validate_input_between_one_and_one_hundred(monkeypatch):
+    monkeypatch.setattr("builtins.input", lambda x: '46')
+    assert album.validate_input() == 46
+
+
+def test_validate_input_less_than_one_hundred(monkeypatch):
+    monkeypatch.setattr("builtins.input", lambda x: '99')
+    assert album.validate_input() == 99
+
+
+def test_validate_input_equal_to_one_hundred(monkeypatch):
+    monkeypatch.setattr("builtins.input", lambda x: '100')
+    assert album.validate_input() == 100
+
+
+def test_validate_input_greater_than_one_hundred(monkeypatch, caplog):
+    monkeypatch.setattr("builtins.input", lambda x: '101')
+    assert album.validate_input() == -1
+    assert caplog.record_tuples == [("root", logging.WARNING,
+                                    INPUT_WARNING_MESSAGE)]
+
+
+def test_main_server_unexpected_behavior(monkeypatch, requests_mock, caplog):
+    monkeypatch.setattr("album.validate_input", lambda: MOCK_ALBUM_ID)
+    requests_mock.get(URL.format(MOCK_ALBUM_ID), json=[])
+    with pytest.raises(RuntimeError, match=SERVER_ERROR_MESSAGE):
+        album.main()
+    assert caplog.record_tuples == [("root", logging.ERROR,
+                                    SERVER_ERROR_MESSAGE)]
+
+
+def test_main_expected_behavior(monkeypatch, requests_mock, capsys):
+    monkeypatch.setattr("album.validate_input", lambda: MOCK_ALBUM_ID)
+    requests_mock.get(URL.format(MOCK_ALBUM_ID), json=MOCK_JSON)
+    album.main()
+    captured = capsys.readouterr()
+    assert captured.out == MOCK_OUTPUT
+
+
+def test_main_expected_behavior_with_loop(monkeypatch, requests_mock, capsys):
+    inputs = [-1, MOCK_ALBUM_ID]
+    monkeypatch.setattr("album.validate_input", lambda: inputs.pop(0))
+    requests_mock.get(URL.format(MOCK_ALBUM_ID), json=MOCK_JSON)
+    album.main()
+    captured = capsys.readouterr()
+    assert captured.out == MOCK_OUTPUT
